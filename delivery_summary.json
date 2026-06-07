@@ -1,0 +1,120 @@
+{
+  "document_title": "NASA TPSX → Xtrium Dataset Delivery Summary",
+  "sop_reference": "SOP-DS-001 v1.3",
+  "effective_date": "March 29, 2026",
+  "amendment_date": "June 3, 2026",
+  "prepared_by": "Data Transformation Specialist",
+  "schema": "xtrium_material_schema_v1.3.json",
+  "validation_status": "PASS",
+  "dataset_statistics": {
+    "total_material_records": 1549,
+    "total_property_instances": 5232,
+    "avg_properties_per_material": 3.4,
+    "output_format": "One JSON file per material record",
+    "naming_convention": "{canonical_name}.json",
+    "encoding": "UTF-8"
+  },
+  "source_databases": {
+    "K&K Associates Materials": {
+      "supplier_canonical": "kk-associates-materials",
+      "record_count": 1143
+    },
+    "NASA JSC PathFinder Materials": {
+      "supplier_canonical": "nasa-jsc-pathfinder-materials",
+      "record_count": 189
+    },
+    "NASA Langley Research Center Database": {
+      "supplier_canonical": "nasa-langley-research-center-database",
+      "record_count": 145
+    },
+    "NASA Ames Thermal Protection Materials": {
+      "supplier_canonical": "nasa-ames-thermal-protection-materials",
+      "record_count": 72
+    },
+    "TPSX": {
+      "supplier_canonical": "nasa-tpsx",
+      "record_count": 0
+    }
+  },
+  "material_type_breakdown": {
+    "metal": 621,
+    "composite": 282,
+    "ceramic": 145,
+    "polymer": 91,
+    "glass": 38,
+    "elastomer": 20,
+    "adhesive": 14,
+    "unmapped_category": 338,
+    "note": "338 materials have Category values not in the SOP §5.2 mapping table. material_type set to null per SOP. Original Category value preserved in processing_notes."
+  },
+  "property_category_breakdown": {
+    "thermal": 3144,
+    "physical": 1718,
+    "mechanical": 222,
+    "processing": 97,
+    "optical": 24,
+    "chemical": 12,
+    "environmental": 8,
+    "electrical": 7
+  },
+  "condition_distribution": {
+    "assumed STP": 4348,
+    "STP": 567,
+    "Non-STP": 248,
+    "null": 69,
+    "note": "Condition mapped from _STP column per SOP §6.2 complete mapping table. 'interpolated(T)' STP value could not be mapped — condition set to null, flagged in _stp_review_for_project_lead.json"
+  },
+  "sop_compliance": {
+    "schema_validation": {
+      "status": "PASS",
+      "files_validated": 1549,
+      "failures": 0,
+      "schema_file": "xtrium_material_schema_v1.3.json",
+      "validator": "JSON Schema Draft-07 (jsonschema Python library)"
+    },
+    "rule_1_no_data_loss": "PASS — All 1,287 CSV columns accounted for in output JSON",
+    "rule_2_no_schema_modification": "PASS — All 25 top-level keys present in every file, no extra keys",
+    "rule_3_property_grouping": "PASS — All _Value/_Units/_Uncertainty/_Source/_STP/_Reference/_Last_Modified grouped in single property object raw dict",
+    "rule_4_multiple_instances": "PASS — Instance labels applied based on actual row data count (§6.5), not schema column count",
+    "rule_5_null_values": "PASS — null for missing scalars, [] for empty lists, no null keys inside any raw dict"
+  },
+  "field_mapping_compliance": {
+    "value_format": "Exact CSV string. Scientific notation converted to plain decimal (e.g. 6.08e-08 → 0.0000000608). Integers as integers ('288'). Decimals exact ('0.0899').",
+    "numeric_value": "Parsed Python float of value string. null if value is non-numeric.",
+    "uncertainty_format": "Same rule as value — plain decimal, no scientific notation.",
+    "last_modified": "Date only (YYYY-MM-DD). Stripped of '00:00:00' and '| Description:' artefacts.",
+    "stp_field": "Preserved as exact CSV text ('True', 'nonstp', 'assumed/assumed', etc). Not floated to 1.0.",
+    "reference_field": "Citation index as exact CSV text ('1', '2', etc). Not floated to '1.0'.",
+    "sources_0_source_name": "Always 'NASA TPSX Materials Database' (long form) per SOP §8.1",
+    "property_source_name": "Short form 'NASA TPSX' or named standard code (ASTM/ISO/NASA-TM) if _Source column contains one, per SOP §6.1",
+    "supplier_canonical": "Fixed 5-value mapping table per SOP §5.3",
+    "processing_notes": "Assembled from Composition, Description, Notes, TRL, Manufacturer, Original Category, Pictures (non-URL text). Segments joined with double newline. Suppressed artefacts excluded.",
+    "canonical_name": "Lowercase-hyphenated material name (no uppercase, no spaces, no special chars)",
+    "property_canonical": "snake_case (no hyphens, all lowercase)"
+  },
+  "known_flags_for_project_lead": [
+    {
+      "flag": "interpolated(T) STP value",
+      "file": "_stp_review_for_project_lead.json",
+      "description": "STP value 'interpolated(T)' is not defined in SOP §6.2 mapping table. condition set to null. Raw STP value preserved in raw.STP. Awaiting Project Lead guidance on correct condition mapping."
+    },
+    {
+      "flag": "338 unmapped Category values",
+      "description": "Category strings not in the 8-entry SOP §5.2 mapping table. material_type set to null per SOP rule. Best-effort mapping applied where possible (e.g. 'Polyamides' → 'polymer'). Original Category value recorded in processing_notes for every affected material."
+    }
+  ],
+  "included_files": {
+    "nasa_xtrium_json_1549_files.zip": "1,549 material JSON files + 2 review/info files",
+    "xtrium_material_schema_v1.3.json": "JSON Schema Draft-07 file used to validate all output files",
+    "delivery_summary.json": "This file"
+  },
+  "data_integrity_notes": [
+    "All 1,287 CSV columns are represented in outputs — no data discarded (Rule 1).",
+    "material_id is null in all files — assigned by load_to_neo4j.py at import time (SOP §5.1).",
+    "supplier_product_id is null in all files — not present in NASA TPSX data (SOP §5.3).",
+    "compliance_references, applications_mentioned, hazard_flags are [] in all files — not in NASA TPSX data.",
+    "images are [] in all files — NASA TPSX Pictures column contains descriptive text labels, not URLs.",
+    "Property_References full text preserved in sources[0].raw.Property_References per SOP §8.2.",
+    "Duplicate canonical names resolved by appending _2, _3 suffix to filename."
+  ]
+}

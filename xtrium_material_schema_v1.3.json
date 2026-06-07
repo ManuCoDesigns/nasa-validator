@@ -1,0 +1,465 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://xtrium.io/schemas/material-graph-v1.3.json",
+  "title": "Xtrium Materials Graph Schema",
+  "description": "Schema for a single material record transformed from NASA TPSX Open Materials Database per SOP-DS-001 v1.3",
+  "type": "object",
+  "required": [
+    "material_name",
+    "properties",
+    "sources"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "material_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Assigned by load_to_neo4j.py at import time. Always null in exported files.",
+      "default": null
+    },
+    "material_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Full material name exactly as it appears in NASA TPSX. REQUIRED."
+    },
+    "canonical_name": {
+      "type": "string",
+      "pattern": "^[a-z0-9\\-]+$",
+      "description": "Lowercase, spaces replaced with hyphens, special characters removed. e.g. 'aluminum-6061-t6'"
+    },
+    "cas_number": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "CAS registry number. Always null — NASA TPSX does not provide CAS numbers."
+    },
+    "uns_number": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "UNS designation. Always null — NASA TPSX does not provide UNS numbers."
+    },
+    "icsd_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ICSD database ID. Always null for this dataset."
+    },
+    "inchikey": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "InChIKey identifier. Always null for this dataset."
+    },
+    "external_id_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Type of external identifier. Always null for this dataset."
+    },
+    "chemical_formula": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Extracted from Composition field ONLY when the entire cell is a formula string (e.g. Ti-6Al-4V). Null if prose or mixed content."
+    },
+    "material_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "metal",
+        "polymer",
+        "ceramic",
+        "composite",
+        "elastomer",
+        "adhesive",
+        "glass",
+        null
+      ],
+      "description": "Material type mapped from NASA Category field per SOP §5.2 mapping table."
+    },
+    "material_subtype": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Interpreted from Composition/Description if clearly stated. Otherwise null."
+    },
+    "grade": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Unambiguous grade/variant token extracted from Material_Name (e.g. 'T6', 'Grade 5', '450G'). Null if no discrete grade token."
+    },
+    "trade_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Trade names extracted from Name/Description fields. Empty array [] if none found."
+    },
+    "is_variant": {
+      "type": "boolean",
+      "description": "True only if material is clearly a variant of a base material. Default false."
+    },
+    "base_material_canonical_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Canonical name of base material. Null unless is_variant is true."
+    },
+    "supplier_context": {
+      "type": "object",
+      "required": [
+        "supplier_canonical_name",
+        "supplier_product_id",
+        "supplier_grade_name",
+        "datasheet_url"
+      ],
+      "additionalProperties": false,
+      "description": "Supplier and source context per SOP §5.3",
+      "properties": {
+        "supplier_canonical_name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "nasa-tpsx",
+            "kk-associates-materials",
+            "nasa-jsc-pathfinder-materials",
+            "nasa-langley-research-center-database",
+            "nasa-ames-thermal-protection-materials",
+            null
+          ],
+          "description": "Fixed mapping from Database_Source per SOP §5.3 mapping table."
+        },
+        "supplier_product_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Not in NASA data. Always null."
+        },
+        "supplier_grade_name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Grade designation extracted from Material_Name."
+        },
+        "datasheet_url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri",
+          "description": "MaterialDetail URL from URL column. e.g. https://tpsx.arc.nasa.gov/Material?id=N"
+        }
+      }
+    },
+    "properties": {
+      "type": "array",
+      "description": "Array of material property objects. One object per property instance per SOP §6.",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "canonical_name",
+          "value",
+          "numeric_value",
+          "unit",
+          "condition",
+          "property_category",
+          "raw",
+          "source"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Human-readable property name with spaces and Title Case. e.g. 'Tensile Strength Isotropic'"
+          },
+          "canonical_name": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+$",
+            "description": "snake_case property name. No hyphens. e.g. 'tensile_strength_isotropic'"
+          },
+          "value": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Exact CSV string value. No scientific notation — converted to plain decimal. e.g. '288', '0.0000000608', '0.0899', '40-60'"
+          },
+          "numeric_value": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Parsed float of value string. Null if value is non-numeric (range, text)."
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Unit of measurement from _Units column. Null if not provided."
+          },
+          "condition": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Test condition. Built from STP mapping + instance label. e.g. 'STP', 'Non-STP', 'assumed STP', 'Non-STP, Instance 1'. Null if no condition information.",
+            "examples": [
+              "STP",
+              "Non-STP",
+              "assumed STP",
+              "Non-STP, Instance 1",
+              "Instance 1",
+              null
+            ]
+          },
+          "property_category": {
+            "type": "string",
+            "enum": [
+              "mechanical",
+              "thermal",
+              "electrical",
+              "physical",
+              "optical",
+              "chemical",
+              "environmental",
+              "processing"
+            ],
+            "description": "Category assigned per SOP §6.4 classification table."
+          },
+          "raw": {
+            "type": "object",
+            "description": "All CSV sub-columns for this property. No null values — absent keys are omitted entirely per SOP §10.",
+            "additionalProperties": false,
+            "properties": {
+              "Value": {
+                "type": "string"
+              },
+              "Units": {
+                "type": "string"
+              },
+              "Uncertainty": {
+                "type": "string",
+                "description": "Plain decimal string. No scientific notation."
+              },
+              "Source": {
+                "type": "string"
+              },
+              "STP": {
+                "type": "string",
+                "description": "Raw STP value as read from CSV. e.g. 'True', 'nonstp', 'assumed/assumed'"
+              },
+              "Reference": {
+                "type": "string"
+              },
+              "Last_Modified": {
+                "type": "string",
+                "description": "Date only. No 00:00:00 suffix."
+              },
+              "instance": {
+                "type": "string",
+                "description": "Present only when multiple instances of this property exist in the row."
+              },
+              "stp_review_note": {
+                "type": "string",
+                "description": "Present only when STP value is not in SOP §6.2 mapping table."
+              }
+            }
+          },
+          "source": {
+            "type": "object",
+            "required": [
+              "source_name",
+              "source_url",
+              "doi",
+              "tier"
+            ],
+            "additionalProperties": false,
+            "description": "Property-level source. Uses SHORT form 'NASA TPSX' or named standard code.",
+            "properties": {
+              "source_name": {
+                "type": "string",
+                "description": "Short form: 'NASA TPSX', or named standard code if _Source is ASTM/ISO/NASA-TM. Never the long form 'NASA TPSX Materials Database'."
+              },
+              "source_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Same MaterialDetail URL as datasheet_url."
+              },
+              "doi": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tier": {
+                "type": "string",
+                "enum": [
+                  "tier1",
+                  "tier2",
+                  "tier3"
+                ],
+                "description": "Always 'tier1' for NASA TPSX data."
+              }
+            }
+          }
+        }
+      }
+    },
+    "standards_referenced": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Standard codes parsed from Property_References. e.g. ['ASTM D638', 'ISO 527-1']. Empty array [] if none."
+    },
+    "compliance_references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Always [] — not provided in NASA TPSX data."
+    },
+    "applications_mentioned": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Always [] — not provided in NASA TPSX data."
+    },
+    "processing_notes": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Combined free-text from Composition, Description, Notes, TRL, Manufacturer, Original Category, Pictures (non-URL). Segments joined with double newline. Null if all source fields empty."
+    },
+    "hazard_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Always [] — not provided in NASA TPSX data."
+    },
+    "availability_notes": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Always null — not provided in NASA TPSX data."
+    },
+    "images": {
+      "type": "array",
+      "description": "Image entries parsed from Pictures column URLs. Empty [] if no URLs.",
+      "items": {
+        "type": "object",
+        "required": [
+          "image_url",
+          "image_data",
+          "image_type"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "image_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "image_data": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Always null — binary data not in CSV."
+          },
+          "image_type": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "null unless type determinable."
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Citation sources. First entry always NASA TPSX Materials Database (long form). Additional entries for NASA-TM codes.",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_name",
+          "source_url",
+          "doi",
+          "tier"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "source_name": {
+            "type": "string",
+            "description": "Top-level ALWAYS uses long form: 'NASA TPSX Materials Database'."
+          },
+          "source_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "doi": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "tier1",
+              "tier2",
+              "tier3"
+            ]
+          },
+          "raw": {
+            "type": "object",
+            "description": "Source metadata. Keys omitted if CSV cell empty or suppressed artefact.",
+            "additionalProperties": false,
+            "properties": {
+              "General_References": {
+                "type": "string"
+              },
+              "Point_of_Contact": {
+                "type": "string"
+              },
+              "Last_Modified": {
+                "type": "string",
+                "description": "Date only. No 00:00:00 suffix."
+              },
+              "Property_References": {
+                "type": "string",
+                "description": "Full raw text per SOP §8.2 fidelity rule."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
