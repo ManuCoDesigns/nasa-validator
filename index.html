@@ -5,388 +5,716 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Xtrium Material JSON Validator — SOP-DS-001 v1.3</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh}
-  header{background:linear-gradient(135deg,#1a1f2e,#0d2137);padding:28px 40px;border-bottom:2px solid #2d6a9f}
-  header h1{font-size:1.5rem;font-weight:700;color:#60aeff;letter-spacing:.5px}
-  header p{font-size:.85rem;color:#94a3b8;margin-top:4px}
-  .container{max-width:1100px;margin:0 auto;padding:32px 24px}
-  .drop-zone{border:2px dashed #2d6a9f;border-radius:12px;padding:48px;text-align:center;
-    background:#141824;cursor:pointer;transition:all .2s;margin-bottom:24px}
-  .drop-zone:hover,.drop-zone.drag-over{border-color:#60aeff;background:#1a2233}
-  .drop-zone svg{width:48px;height:48px;color:#2d6a9f;margin-bottom:16px}
-  .drop-zone h2{font-size:1.1rem;color:#94a3b8;margin-bottom:8px}
-  .drop-zone p{font-size:.85rem;color:#64748b}
-  #fileInput{display:none}
-  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;
-    font-size:.875rem;font-weight:600;cursor:pointer;border:none;transition:all .15s}
-  .btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#1d4ed8}
-  .btn-clear{background:#374151;color:#9ca3af}.btn-clear:hover{background:#4b5563;color:#fff}
-  .controls{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
-  .stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
-  .stat{background:#1a1f2e;border:1px solid #2d3748;border-radius:8px;padding:16px;text-align:center}
-  .stat-num{font-size:1.8rem;font-weight:700;display:block}
-  .stat-label{font-size:.75rem;color:#64748b;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
-  .pass{color:#34d399}.fail{color:#f87171}.warn{color:#fbbf24}.info{color:#60aeff}
-  .results-table{width:100%;border-collapse:collapse;font-size:.82rem}
-  .results-table th{background:#1a1f2e;padding:10px 14px;text-align:left;color:#60aeff;
-    border-bottom:2px solid #2d3748;position:sticky;top:0;z-index:10}
-  .results-table td{padding:9px 14px;border-bottom:1px solid #1e2433;vertical-align:top}
-  .results-table tr:hover td{background:#1a1f2e}
-  .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;
-    font-size:.75rem;font-weight:600}
-  .badge-pass{background:#064e3b;color:#34d399}
-  .badge-fail{background:#450a0a;color:#f87171}
-  .err-list{margin-top:4px;padding-left:14px}
-  .err-list li{color:#fca5a5;margin:2px 0;list-style:disc inside;font-size:.77rem}
-  .progress-bar{height:6px;background:#1e2433;border-radius:4px;margin-bottom:24px;overflow:hidden}
-  .progress-fill{height:100%;background:#2563eb;border-radius:4px;transition:width .1s}
-  .filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-  .filter-btn{padding:5px 14px;border-radius:6px;border:1px solid #2d3748;background:#1a1f2e;
-    color:#94a3b8;font-size:.8rem;cursor:pointer;transition:all .15s}
-  .filter-btn.active{border-color:#60aeff;color:#60aeff;background:#1a2233}
-  .summary-box{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:20px;margin-bottom:24px}
-  .summary-box h3{color:#60aeff;margin-bottom:12px;font-size:.95rem}
-  .check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
-  .check-item{display:flex;align-items:flex-start;gap:8px;padding:8px;background:#141824;
-    border-radius:6px;font-size:.8rem}
-  .check-icon{flex-shrink:0;margin-top:1px}
-  table-wrapper{overflow-x:auto}
-  .schema-note{font-size:.75rem;color:#64748b;margin-top:8px}
-  .empty-state{text-align:center;padding:60px;color:#4b5563}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0b0e17;color:#e2e8f0;min-height:100vh}
+
+/* ── Header ── */
+header{background:#111827;padding:18px 32px;border-bottom:1px solid #1f2937;display:flex;align-items:center;gap:16px}
+.logo{font-size:1.5rem}
+.header-text h1{font-size:1.1rem;font-weight:700;color:#60aeff}
+.header-text p{font-size:.75rem;color:#4b5563;margin-top:2px}
+
+/* ── Layout ── */
+.app{display:flex;height:calc(100vh - 61px);overflow:hidden}
+.left-pane{width:420px;min-width:320px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid #1f2937;background:#0d1117}
+.right-pane{flex:1;overflow:hidden;display:flex;flex-direction:column;background:#0b0e17}
+
+/* ── Drop zone ── */
+.drop-zone{margin:16px;border:2px dashed #1f3a5f;border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:#0d1525}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#3b82f6;background:#0f1e35}
+.drop-zone p{font-size:.8rem;color:#4b5563;margin-top:6px}
+.drop-zone .dz-title{font-size:.9rem;color:#94a3b8;font-weight:600}
+#fileInput{display:none}
+
+/* ── Controls ── */
+.controls{padding:0 16px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-primary:disabled{background:#1e3358;color:#3d5a8a;cursor:not-allowed}
+.btn-ghost{background:#1f2937;color:#94a3b8;border:1px solid #374151}.btn-ghost:hover{color:#e2e8f0}
+.btn-csv{background:#064e3b;color:#6ee7b7;border:1px solid #065f46}.btn-csv:hover{background:#065f46}
+.file-count{font-size:.75rem;color:#4b5563}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 16px 12px}
+.stat{background:#111827;border:1px solid #1f2937;border-radius:7px;padding:10px 8px;text-align:center}
+.stat-n{font-size:1.3rem;font-weight:700;display:block}
+.stat-l{font-size:.65rem;color:#4b5563;text-transform:uppercase;letter-spacing:.5px}
+.c-pass{color:#34d399}.c-fail{color:#f87171}.c-warn{color:#fbbf24}.c-info{color:#60aeff}
+
+/* ── Progress ── */
+.progress{height:3px;background:#1f2937;margin:0 16px 8px}
+.progress-fill{height:100%;background:#2563eb;transition:width .1s}
+
+/* ── Filter bar ── */
+.filter-bar{padding:0 16px 8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fb{padding:4px 10px;border-radius:5px;border:1px solid #1f2937;background:#111827;color:#64748b;font-size:.72rem;cursor:pointer}
+.fb.active{border-color:#3b82f6;color:#60aeff}
+.search{flex:1;min-width:120px;padding:4px 10px;border-radius:5px;border:1px solid #1f2937;background:#111827;color:#e2e8f0;font-size:.72rem;outline:none}
+.search:focus{border-color:#3b82f6}
+
+/* ── File list ── */
+.file-list{flex:1;overflow-y:auto;padding:0 16px 16px}
+.file-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;border:1px solid transparent;margin-bottom:4px;cursor:pointer;transition:all .15s}
+.file-item:hover{background:#111827;border-color:#1f2937}
+.file-item.selected{background:#0f1e35;border-color:#2563eb}
+.fi-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;flex-shrink:0}
+.fi-pass{background:#064e3b;color:#34d399}
+.fi-fail{background:#450a0a;color:#f87171}
+.fi-name{font-size:.73rem;font-family:monospace;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.fi-errs{font-size:.7rem;font-weight:700;flex-shrink:0}
+.fi-errs.has-err{color:#f87171}
+.fi-errs.no-err{color:#34d399}
+
+/* ── Right pane ── */
+.rp-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#374151}
+.rp-empty .big{font-size:3rem;margin-bottom:12px}
+.rp-header{padding:16px 24px 12px;border-bottom:1px solid #1f2937;background:#0d1117}
+.rp-header h2{font-size:.95rem;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-header .rp-sub{font-size:.75rem;color:#4b5563;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-tabs{display:flex;gap:4px;padding:12px 24px 0;border-bottom:1px solid #1f2937}
+.rp-tab{padding:6px 16px;border-radius:6px 6px 0 0;font-size:.78rem;cursor:pointer;border:1px solid transparent;border-bottom:none;color:#64748b;background:none}
+.rp-tab.active{background:#111827;border-color:#1f2937;color:#60aeff}
+.rp-body{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* ── JSON Tree ── */
+.json-tree{font-family:'Cascadia Code','Fira Code','Courier New',monospace;font-size:.78rem;line-height:1.9}
+.jl{display:block;padding:1px 0;position:relative}
+/* Field row */
+.jrow{display:flex;align-items:flex-start;gap:0;padding:2px 6px;border-radius:5px;position:relative}
+.jrow.err-row{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);margin:1px 0;border-radius:6px}
+.jrow.ok-row{background:transparent}
+.jrow:hover{background:rgba(255,255,255,0.03)}
+.j-indent{display:inline-block;flex-shrink:0}
+.j-icon{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900;flex-shrink:0;margin-right:6px;margin-top:2px}
+.j-ok{background:#064e3b;color:#34d399}
+.j-err{background:#7f1d1d;color:#f87171}
+.j-neu{background:#1f2937;color:#374151}
+.j-key{color:#7dd3fc}
+.j-colon{color:#4b5563}
+.j-str{color:#86efac}
+.j-num{color:#fbbf24}
+.j-bool{color:#c084fc}
+.j-null{color:#4b5563;font-style:italic}
+.j-bracket{color:#94a3b8}
+.j-arr-label{color:#64748b;font-size:.7rem}
+/* Error tooltip under the row */
+.err-tip{margin:0 0 4px 48px;background:#1a0505;border-left:3px solid #dc2626;border-radius:0 6px 6px 0;padding:7px 12px;font-size:.73rem}
+.err-tip .err-rule{color:#f87171;font-weight:600;margin-bottom:2px}
+.err-tip .err-sop{color:#9ca3af;font-size:.68rem}
+/* Section header */
+.sec-header{font-size:.68rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.8px;padding:14px 6px 4px;border-bottom:1px solid #1f2937;margin-bottom:4px}
+
+/* ── Error summary tab ── */
+.err-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.err-table th{background:#111827;padding:8px 12px;text-align:left;color:#60aeff;border-bottom:1px solid #1f2937;position:sticky;top:0}
+.err-table td{padding:8px 12px;border-bottom:1px solid #111827;vertical-align:top}
+.err-table tr:hover td{background:#0d1117}
+.field-pill{display:inline-block;background:#1f2937;border:1px solid #374151;border-radius:4px;padding:1px 7px;font-family:monospace;font-size:.7rem;color:#fbbf24}
+
+/* ── Pass banner ── */
+.pass-banner{background:#052e16;border:1px solid #14532d;border-radius:10px;padding:20px;text-align:center;margin-bottom:16px}
+.pass-banner .pb-icon{font-size:2.5rem;margin-bottom:8px}
+.pass-banner h3{color:#34d399;font-size:1rem;margin-bottom:4px}
+.pass-banner p{color:#6b7280;font-size:.8rem}
+
+/* ── CSV badge ── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:700}
+.b-pass{background:#064e3b;color:#34d399}
+.b-fail{background:#450a0a;color:#f87171}
 </style>
 </head>
 <body>
+
 <header>
-  <h1>⚛ Xtrium Material JSON Validator</h1>
-  <p>SOP-DS-001 v1.3 · NASA TPSX → Xtrium Schema · Validates against xtrium_material_schema_v1.3.json rules</p>
+  <div class="logo">⚛</div>
+  <div class="header-text">
+    <h1>Xtrium Material JSON Validator</h1>
+    <p>SOP-DS-001 v1.3 · NASA TPSX → Xtrium Schema · Field-level validation with inline error highlights</p>
+  </div>
 </header>
-<div class="container">
 
-  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-    <h2>Drop JSON files here or click to select</h2>
-    <p>Accepts individual .json files or multiple files at once · No file size limit · Runs entirely in browser</p>
-    <input type="file" id="fileInput" multiple accept=".json">
+<div class="app">
+
+  <!-- ── LEFT PANE ── -->
+  <div class="left-pane">
+
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div style="font-size:2rem;margin-bottom:8px">📂</div>
+      <div class="dz-title">Drop JSON files or click to select</div>
+      <p>Any number of files · Runs entirely in browser</p>
+      <input type="file" id="fileInput" multiple accept=".json">
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="validateBtn" disabled onclick="runValidation()">▶ Validate</button>
+      <button class="btn btn-ghost" onclick="clearAll()">✕ Clear</button>
+      <button class="btn btn-csv" id="csvBtn" style="display:none" onclick="downloadCSV()">⬇ CSV Report</button>
+      <span class="file-count" id="fileCount"></span>
+    </div>
+
+    <div class="stats" id="statsBar" style="display:none">
+      <div class="stat"><span class="stat-n c-info" id="sTotal">0</span><div class="stat-l">Loaded</div></div>
+      <div class="stat"><span class="stat-n c-pass" id="sPass">0</span><div class="stat-l">Pass</div></div>
+      <div class="stat"><span class="stat-n c-fail" id="sFail">0</span><div class="stat-l">Fail</div></div>
+      <div class="stat"><span class="stat-n c-warn" id="sErr">0</span><div class="stat-l">Errors</div></div>
+    </div>
+
+    <div class="progress" id="progressBar" style="display:none">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+
+    <div class="filter-bar" id="filterBar" style="display:none">
+      <button class="fb active" onclick="setFilter('all',this)">All</button>
+      <button class="fb" onclick="setFilter('pass',this)">✓ Pass</button>
+      <button class="fb" onclick="setFilter('fail',this)">✗ Fail</button>
+      <input class="search" id="searchInput" placeholder="Search…" oninput="renderList()">
+    </div>
+
+    <div class="file-list" id="fileList"></div>
   </div>
 
-  <div class="controls">
-    <button class="btn btn-primary" onclick="runValidation()" id="validateBtn" disabled>▶ Validate All</button>
-    <button class="btn btn-clear" onclick="clearAll()">✕ Clear</button>
-    <span id="fileCount" style="color:#64748b;font-size:.85rem"></span>
-  </div>
+  <!-- ── RIGHT PANE ── -->
+  <div class="right-pane" id="rightPane">
+    <div class="rp-empty" id="emptyRight">
+      <div class="big">👈</div>
+      <div style="color:#3b4a63;font-weight:600;margin-bottom:6px">Select a file to inspect</div>
+      <div style="color:#1f2937;font-size:.8rem">Load and validate files, then click any row</div>
+    </div>
 
-  <div class="progress-bar" id="progressBar" style="display:none">
-    <div class="progress-fill" id="progressFill" style="width:0%"></div>
-  </div>
-
-  <div class="stats-bar" id="statsBar" style="display:none">
-    <div class="stat"><span class="stat-num info" id="sTotal">0</span><div class="stat-label">Files Loaded</div></div>
-    <div class="stat"><span class="stat-num pass" id="sPass">0</span><div class="stat-label">Passed</div></div>
-    <div class="stat"><span class="stat-num fail" id="sFail">0</span><div class="stat-label">Failed</div></div>
-    <div class="stat"><span class="stat-num warn" id="sErrors">0</span><div class="stat-label">Total Errors</div></div>
-    <div class="stat"><span class="stat-num info" id="sProps">0</span><div class="stat-label">Properties</div></div>
-  </div>
-
-  <div id="checksummary" style="display:none"></div>
-
-  <div class="filter-bar" id="filterBar" style="display:none">
-    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
-    <button class="filter-btn" onclick="setFilter('pass',this)">✓ Pass Only</button>
-    <button class="filter-btn" onclick="setFilter('fail',this)">✗ Fail Only</button>
-  </div>
-
-  <div style="overflow-x:auto">
-    <table class="results-table" id="resultsTable" style="display:none">
-      <thead>
-        <tr>
-          <th>#</th><th>File</th><th>Status</th><th>material_name</th>
-          <th>material_type</th><th>Properties</th><th>Errors</th>
-        </tr>
-      </thead>
-      <tbody id="resultsBody"></tbody>
-    </table>
-  </div>
-
-  <div class="empty-state" id="emptyState">
-    <div style="font-size:3rem;margin-bottom:16px">📂</div>
-    <div style="color:#60aeff;font-weight:600;margin-bottom:8px">No files loaded yet</div>
-    <div>Drop your Xtrium material JSON files above to begin validation</div>
+    <div id="detailView" style="display:none;flex-direction:column;height:100%">
+      <div class="rp-header">
+        <h2 id="detailFile"></h2>
+        <div class="rp-sub" id="detailMat"></div>
+      </div>
+      <div class="rp-tabs">
+        <div class="rp-tab active" onclick="switchTab('fields',this)" id="tabBtnFields">📋 All Fields</div>
+        <div class="rp-tab" onclick="switchTab('errors',this)" id="tabBtnErrors">⚠ Errors Only</div>
+      </div>
+      <div class="rp-body" id="rpBody"></div>
+    </div>
   </div>
 
 </div>
 
 <script>
-const REQUIRED_TOP = ['material_id','material_name','canonical_name','cas_number','uns_number',
+// ─────────────────────────────────────────────────────────────────────────────
+// SOP validation rules
+// ─────────────────────────────────────────────────────────────────────────────
+const REQUIRED_TOP=['material_id','material_name','canonical_name','cas_number','uns_number',
   'icsd_id','inchikey','external_id_type','chemical_formula','material_type','material_subtype',
   'grade','trade_names','is_variant','base_material_canonical_name','supplier_context',
   'properties','standards_referenced','compliance_references','applications_mentioned',
   'processing_notes','hazard_flags','availability_notes','images','sources'];
-const REQUIRED_SUPPLIER = ['supplier_canonical_name','supplier_product_id','supplier_grade_name','datasheet_url'];
-const REQUIRED_PROP = ['name','canonical_name','value','numeric_value','unit','condition','property_category','raw','source'];
-const REQUIRED_SRC = ['source_name','source_url','doi','tier'];
-const VALID_MAT_TYPES = new Set(['metal','polymer','ceramic','composite','elastomer','adhesive','glass',null]);
-const VALID_PROP_CATS = new Set(['mechanical','thermal','electrical','physical','optical','chemical','environmental','processing']);
-const VALID_TIERS = new Set(['tier1','tier2','tier3']);
-const VALID_SUPPLIERS = new Set(['nasa-tpsx','kk-associates-materials','nasa-jsc-pathfinder-materials',
+const REQUIRED_SUPPLIER=['supplier_canonical_name','supplier_product_id','supplier_grade_name','datasheet_url'];
+const REQUIRED_PROP=['name','canonical_name','value','numeric_value','unit','condition','property_category','raw','source'];
+const REQUIRED_SRC=['source_name','source_url','doi','tier'];
+const VALID_MAT_TYPES=new Set(['metal','polymer','ceramic','composite','elastomer','adhesive','glass',null]);
+const VALID_PROP_CATS=new Set(['mechanical','thermal','electrical','physical','optical','chemical','environmental','processing']);
+const VALID_TIERS=new Set(['tier1','tier2','tier3']);
+const VALID_SUPPLIERS=new Set(['nasa-tpsx','kk-associates-materials','nasa-jsc-pathfinder-materials',
   'nasa-langley-research-center-database','nasa-ames-thermal-protection-materials']);
-const LIST_FIELDS = ['trade_names','standards_referenced','compliance_references','applications_mentioned',
+const LIST_FIELDS=['trade_names','standards_referenced','compliance_references','applications_mentioned',
   'hazard_flags','images','properties','sources'];
-const SCALAR_FIELDS = ['material_id','cas_number','uns_number','icsd_id','inchikey','external_id_type',
+const SCALAR_NULLS=['material_id','cas_number','uns_number','icsd_id','inchikey','external_id_type',
   'chemical_formula','material_subtype','grade','base_material_canonical_name','availability_notes'];
-const SCI_RE = /^-?\d+\.?\d*[eE][+\-]?\d+$/;
+const SCI_RE=/^-?\d+\.?\d*[eE][+\-]?\d+$/;
 
-let loadedFiles = [], allResults = [], currentFilter = 'all';
-
-function validateObject(obj, fname) {
-  const errs = [];
-  // Schema keys
-  for (const k of REQUIRED_TOP) if (!(k in obj)) errs.push(`Missing required key: "${k}"`);
-  for (const k of Object.keys(obj)) if (!REQUIRED_TOP.includes(k)) errs.push(`Extra unexpected key: "${k}"`);
-  // material_name
-  if (!obj.material_name) errs.push('material_name is empty or missing');
-  // canonical_name
-  if (obj.canonical_name && /[A-Z\s]/.test(obj.canonical_name))
-    errs.push(`canonical_name must be lowercase-hyphenated, got: "${obj.canonical_name}"`);
-  // material_type
-  if (!VALID_MAT_TYPES.has(obj.material_type))
-    errs.push(`Invalid material_type: "${obj.material_type}"`);
-  // is_variant
-  if (typeof obj.is_variant !== 'boolean') errs.push('is_variant must be boolean');
-  // list fields
-  for (const f of LIST_FIELDS) if (obj[f] === null || obj[f] === undefined) errs.push(`"${f}" must be [] not null`);
-  // scalar nulls
-  for (const f of SCALAR_FIELDS) if (obj[f] === '') errs.push(`"${f}" must be null not empty string`);
-  // sources
-  if (!obj.sources || obj.sources.length === 0) {
-    errs.push('sources array is empty');
-  } else {
-    const s0 = obj.sources[0];
-    for (const k of REQUIRED_SRC) if (!(k in s0)) errs.push(`sources[0] missing key: "${k}"`);
-    if (s0.source_name !== 'NASA TPSX Materials Database')
-      errs.push(`sources[0].source_name must be "NASA TPSX Materials Database", got "${s0.source_name}"`);
-    if (s0.tier !== 'tier1') errs.push(`sources[0].tier must be "tier1", got "${s0.tier}"`);
-    for (const [k,v] of Object.entries(s0.raw || {}))
-      if (v === null) errs.push(`sources[0].raw.${k} must not be null — omit key if empty`);
+// Returns Map<fieldPath, [{rule, sop}]>
+function validate(obj) {
+  const E=new Map();
+  function add(path,rule,sop){
+    if(!E.has(path))E.set(path,[]);
+    E.get(path).push({rule,sop});
   }
+  // Top-level keys
+  for(const k of REQUIRED_TOP) if(!(k in obj)) add(k,`Missing required key "${k}"`,`SOP §4 schema structure`);
+  for(const k of Object.keys(obj)) if(!REQUIRED_TOP.includes(k)) add(k,`Unexpected key — not in Xtrium schema`,`SOP Rule 2: no schema modification`);
+  // Individual fields
+  if(!obj.material_name) add('material_name','Must be a non-empty string','SOP §5.1 — REQUIRED field');
+  if(obj.canonical_name&&/[A-Z\s]/.test(obj.canonical_name)) add('canonical_name','Must be lowercase-hyphenated, no uppercase or spaces','SOP §5.1 canonical_name rule');
+  if(!VALID_MAT_TYPES.has(obj.material_type)) add('material_type',`"${obj.material_type}" is not a valid type. Allowed: metal/polymer/ceramic/composite/elastomer/adhesive/glass/null`,'SOP §5.2 Category mapping table');
+  if(typeof obj.is_variant!=='boolean') add('is_variant','Must be boolean true or false, not string/null','SOP §5.2');
+  for(const f of LIST_FIELDS) if(obj[f]===null||obj[f]===undefined) add(f,`Must be an empty array [] when no data — never null`,'SOP Rule 5: null values');
+  for(const f of SCALAR_NULLS) if(obj[f]==='') add(f,`Must be null for missing data — never empty string ""`,'SOP Rule 5: null values');
   // supplier_context
-  const sc = obj.supplier_context || {};
-  for (const k of REQUIRED_SUPPLIER) if (!(k in sc)) errs.push(`supplier_context missing key: "${k}"`);
-  if (sc.supplier_canonical_name && !VALID_SUPPLIERS.has(sc.supplier_canonical_name))
-    errs.push(`Unknown supplier_canonical_name: "${sc.supplier_canonical_name}"`);
+  const sc=obj.supplier_context||{};
+  for(const k of REQUIRED_SUPPLIER) if(!(k in sc)) add('supplier_context.'+k,`Missing required field in supplier_context`,'SOP §5.3');
+  if(sc.supplier_canonical_name&&!VALID_SUPPLIERS.has(sc.supplier_canonical_name))
+    add('supplier_context.supplier_canonical_name',`"${sc.supplier_canonical_name}" not in 5-value SOP mapping table. Valid values: nasa-tpsx, kk-associates-materials, nasa-jsc-pathfinder-materials, nasa-langley-research-center-database, nasa-ames-thermal-protection-materials`,'SOP §5.3 supplier_canonical_name mapping table');
+  // sources
+  if(!obj.sources||obj.sources.length===0){
+    add('sources','Must contain at least one source entry','SOP §8.1');
+  } else {
+    const s0=obj.sources[0];
+    for(const k of REQUIRED_SRC) if(!(k in s0)) add('sources[0].'+k,`Missing required field`,'SOP §8.1');
+    if(s0.source_name!=='NASA TPSX Materials Database')
+      add('sources[0].source_name',`Must be exactly "NASA TPSX Materials Database" (long form). Got: "${s0.source_name}"`,'SOP §8.1 top-level source_name rule');
+    if(s0.tier!=='tier1') add('sources[0].tier',`Must be "tier1" for all NASA TPSX data. Got: "${s0.tier}"`,'SOP §8 tier classification');
+    for(const[k,v]of Object.entries(s0.raw||{}))
+      if(v===null) add('sources[0].raw.'+k,`Null not allowed in raw dict — omit the key entirely when data is absent`,'SOP §10 raw dict key-omission rule');
+    const slm=(s0.raw||{}).Last_Modified||'';
+    if(slm&&(slm.includes('00:00:00')||slm.includes('| Description:')))
+      add('sources[0].raw.Last_Modified',`Contains parsing artefact: "${slm}". Strip 00:00:00 datetime suffix and | Description: suffix`,'SOP §5.4 artefact suppression');
+  }
   // properties
-  const byCn = {};
-  for (const p of (obj.properties || [])) {
-    for (const k of REQUIRED_PROP) if (!(k in p)) errs.push(`Property "${p.name||'?'}" missing key: "${k}"`);
-    const pcn = p.canonical_name || '';
-    if (pcn.includes('-') || pcn !== pcn.toLowerCase())
-      errs.push(`Property canonical_name must be snake_case: "${pcn}"`);
-    if (!VALID_PROP_CATS.has(p.property_category))
-      errs.push(`Invalid property_category "${p.property_category}" for "${p.name}"`);
-    if (p.value !== null && p.value !== undefined && typeof p.value !== 'string')
-      errs.push(`value must be string, got ${typeof p.value} for "${p.name}"`);
-    // No scientific notation
-    if (typeof p.value === 'string' && SCI_RE.test(p.value))
-      errs.push(`Scientific notation in value: "${p.value}" for "${p.name}"`);
-    if (p.raw && typeof p.raw.Value === 'string' && SCI_RE.test(p.raw.Value))
-      errs.push(`Scientific notation in raw.Value: "${p.raw.Value}" for "${p.name}"`);
-    if (p.raw && typeof p.raw.Uncertainty === 'string' && SCI_RE.test(p.raw.Uncertainty))
-      errs.push(`Scientific notation in raw.Uncertainty: "${p.raw.Uncertainty}" for "${p.name}"`);
-    // numeric_value consistency
-    if (p.value !== null && p.value !== undefined) {
-      const parsed = parseFloat(p.value);
-      if (!isNaN(parsed) && p.numeric_value !== null && Math.abs(p.numeric_value - parsed) > Math.abs(parsed) * 1e-9)
-        errs.push(`numeric_value mismatch for "${p.name}": value="${p.value}" but numeric_value=${p.numeric_value}`);
-      if (!isNaN(parsed) && p.numeric_value === null)
-        errs.push(`numeric_value should not be null for numeric value="${p.value}" in "${p.name}"`);
+  const byCn={};
+  for(let pi=0;pi<(obj.properties||[]).length;pi++){
+    const p=obj.properties[pi];
+    const px=`properties[${pi}]`;
+    for(const k of REQUIRED_PROP) if(!(k in p)) add(`${px}.${k}`,`Missing required property field`,'SOP §6.1 property object structure');
+    const pcn=p.canonical_name||'';
+    if(pcn.includes('-')||pcn!==pcn.toLowerCase()) add(`${px}.canonical_name`,`Must be snake_case (underscores, lowercase only). No hyphens. Got: "${pcn}"`,'SOP §6.3 canonical name transformation');
+    if(!VALID_PROP_CATS.has(p.property_category)) add(`${px}.property_category`,`"${p.property_category}" is not a valid category. Allowed: mechanical/thermal/electrical/physical/optical/chemical/environmental/processing`,'SOP §6.4 property category classification');
+    if(p.value!==null&&p.value!==undefined&&typeof p.value!=='string') add(`${px}.value`,`Must be a string type, got ${typeof p.value}`,'SOP §6.2 value field string format');
+    if(typeof p.value==='string'&&SCI_RE.test(p.value)) add(`${px}.value`,`Scientific notation "${p.value}" must be converted to plain decimal (e.g. 6.08e-08 → 0.0000000608)`,'SOP §6.2 value field format — no scientific notation');
+    if(p.raw&&typeof p.raw.Value==='string'&&SCI_RE.test(p.raw.Value)) add(`${px}.raw.Value`,`Scientific notation in raw.Value — must be plain decimal`,'SOP §6.2');
+    if(p.raw&&typeof p.raw.Uncertainty==='string'&&SCI_RE.test(p.raw.Uncertainty)) add(`${px}.raw.Uncertainty`,`Scientific notation in raw.Uncertainty — must be plain decimal`,'SOP §6.2');
+    if(p.value!==null&&p.value!==undefined){
+      const parsed=parseFloat(p.value);
+      if(!isNaN(parsed)&&p.numeric_value!==null&&Math.abs(p.numeric_value-parsed)>Math.abs(parsed)*1e-9+1e-30)
+        add(`${px}.numeric_value`,`Mismatch with value field: value="${p.value}" implies numeric_value=${parsed}, got ${p.numeric_value}`,'SOP §6.2 numeric_value consistency');
+      if(!isNaN(parsed)&&p.numeric_value===null) add(`${px}.numeric_value`,`Should not be null when value "${p.value}" is numeric`,'SOP §6.2');
     }
-    // No null in raw
-    for (const [k,v] of Object.entries(p.raw || {}))
-      if (v === null) errs.push(`null in raw.${k} for "${p.name}" — omit key instead`);
-    // No 'nan' string
-    for (const [k,v] of Object.entries(p.raw || {}))
-      if (typeof v === 'string' && v.trim().toLowerCase() === 'nan')
-        errs.push(`'nan' string in raw.${k} for "${p.name}"`);
-    // Last_Modified
-    const lm = (p.raw||{}).Last_Modified || '';
-    if (lm && (lm.includes('00:00:00') || lm.includes('| Description:')))
-      errs.push(`Last_Modified has artefact: "${lm}"`);
-    // source
-    const src = p.source || {};
-    for (const k of REQUIRED_SRC) if (!(k in src)) errs.push(`Property source missing "${k}" for "${p.name}"`);
-    if (src.source_name === 'NASA TPSX Materials Database')
-      errs.push(`Property source_name must use SHORT form, not long form for "${p.name}"`);
-    if (!VALID_TIERS.has(src.tier)) errs.push(`Invalid source tier "${src.tier}" for "${p.name}"`);
-    // Instance tracking
-    byCn[pcn] = (byCn[pcn] || []);
-    byCn[pcn].push(p);
-  }
-  // False instance labels
-  for (const [cn, grp] of Object.entries(byCn)) {
-    if (grp.length === 1 && grp[0].condition && grp[0].condition.includes('Instance'))
-      errs.push(`False Instance label on single-occurrence property: "${grp[0].name}"`);
-  }
-  // STP floated
-  for (const p of (obj.properties||[])) {
-    if ((p.raw||{}).STP === '1.0') errs.push(`STP floated to '1.0' for "${p.name}" — must preserve text`);
-  }
-  // processing_notes nan
-  const pn = obj.processing_notes || '';
-  for (const seg of pn.split('\n\n')) {
-    const after = seg.includes(':') ? seg.split(':').slice(1).join(':').trim() : seg.trim();
-    if (after.toLowerCase() === 'nan') errs.push(`'nan' in processing_notes segment: "${seg}"`);
-  }
-  return errs;
-}
-
-function setFilter(filter, btn) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTable();
-}
-
-function renderTable() {
-  const tbody = document.getElementById('resultsBody');
-  tbody.innerHTML = '';
-  let shown = allResults.filter(r => currentFilter === 'all' || (currentFilter === 'pass' ? r.errors.length === 0 : r.errors.length > 0));
-  for (const [i, r] of shown.entries()) {
-    const pass = r.errors.length === 0;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="color:#64748b">${i+1}</td>
-      <td style="font-family:monospace;font-size:.75rem;max-width:280px;word-break:break-all">${r.filename}</td>
-      <td><span class="badge ${pass?'badge-pass':'badge-fail'}">${pass?'✓ PASS':'✗ FAIL'}</span></td>
-      <td style="max-width:200px;font-size:.78rem;color:#cbd5e1">${(r.obj.material_name||'').substring(0,60)}${(r.obj.material_name||'').length>60?'…':''}</td>
-      <td><span style="color:${r.obj.material_type?'#60aeff':'#64748b'}">${r.obj.material_type||'null'}</span></td>
-      <td style="text-align:center;color:#34d399">${(r.obj.properties||[]).length}</td>
-      <td>${r.errors.length === 0 ? '<span style="color:#34d399">—</span>' : `<ul class="err-list">${r.errors.slice(0,5).map(e=>`<li>${e}</li>`).join('')}${r.errors.length>5?`<li>...and ${r.errors.length-5} more</li>`:''}</ul>`}</td>
-    `;
-    tbody.appendChild(tr);
-  }
-}
-
-async function runValidation() {
-  allResults = [];
-  const bar = document.getElementById('progressBar');
-  const fill = document.getElementById('progressFill');
-  bar.style.display = 'block'; fill.style.width = '0%';
-  document.getElementById('statsBar').style.display = 'grid';
-  document.getElementById('resultsTable').style.display = 'table';
-  document.getElementById('filterBar').style.display = 'flex';
-  document.getElementById('emptyState').style.display = 'none';
-
-  let pass = 0, fail = 0, totalErrors = 0, totalProps = 0;
-
-  for (let i = 0; i < loadedFiles.length; i++) {
-    const {filename, content} = loadedFiles[i];
-    let obj, errs;
-    try {
-      obj = JSON.parse(content);
-      errs = validateObject(obj, filename);
-    } catch(e) {
-      obj = {}; errs = [`Invalid JSON: ${e.message}`];
+    for(const[k,v]of Object.entries(p.raw||{})){
+      if(v===null) add(`${px}.raw.${k}`,`Null value in raw dict — omit the key entirely when data is absent`,'SOP §10 raw key-omission rule');
+      if(typeof v==='string'&&v.trim().toLowerCase()==='nan') add(`${px}.raw.${k}`,`"nan" string must never appear in output — this is a pandas NaN leak`,'SOP Rule 5 / artefact suppression');
     }
-    if (errs.length === 0) pass++; else { fail++; totalErrors += errs.length; }
-    totalProps += (obj.properties||[]).length;
-    allResults.push({filename, obj, errors: errs});
-    fill.style.width = `${Math.round((i+1)/loadedFiles.length*100)}%`;
-    document.getElementById('sTotal').textContent = i+1;
-    document.getElementById('sPass').textContent = pass;
-    document.getElementById('sFail').textContent = fail;
-    document.getElementById('sErrors').textContent = totalErrors;
-    document.getElementById('sProps').textContent = totalProps;
-    if (i % 50 === 0) await new Promise(r => setTimeout(r, 0));
+    if(typeof p.value==='string'&&p.value.trim().toLowerCase()==='nan') add(`${px}.value`,`"nan" string must never appear in output`,'SOP Rule 5');
+    const lm=(p.raw||{}).Last_Modified||'';
+    if(lm&&(lm.includes('00:00:00')||lm.includes('| Description:'))) add(`${px}.raw.Last_Modified`,`Contains artefact "${lm}" — strip 00:00:00 and | Description: suffixes`,'SOP §5.4');
+    const src=p.source||{};
+    for(const k of REQUIRED_SRC) if(!(k in src)) add(`${px}.source.${k}`,`Missing required source field`,'SOP §6.1');
+    if(src.source_name==='NASA TPSX Materials Database') add(`${px}.source.source_name`,`Property-level source must use SHORT form "NASA TPSX" (or named standard code like "ASTM B209"). The long form is only for sources[0]`,'SOP §6.1 two-level source_name rule');
+    if(['TPSX Database','measured','lab measurement'].includes(src.source_name)) add(`${px}.source.source_name`,`Generic value "${src.source_name}" must not appear as source_name — use "NASA TPSX" as fallback`,'SOP §6.1 source_name fallback rule');
+    if(!VALID_TIERS.has(src.tier)) add(`${px}.source.tier`,`Invalid tier "${src.tier}"`,'SOP §8 tier classification');
+    if((p.raw||{}).STP==='1.0') add(`${px}.raw.STP`,`STP boolean was floated to "1.0" — must preserve original text (e.g. "True", "nonstp")`,'SOP §6.2 STP dtype preservation');
+    byCn[pcn]=(byCn[pcn]||[]);
+    byCn[pcn].push({p,px});
   }
-
-  renderTable();
-  renderCheckSummary(pass, fail);
+  for(const[cn,arr]of Object.entries(byCn)){
+    if(arr.length===1&&arr[0].p.condition&&arr[0].p.condition.includes('Instance'))
+      add(`${arr[0].px}.condition`,`False Instance label on single-occurrence property — Instance labels only apply when 2+ readings of the same base property exist in the row`,'SOP §6.5 count-based instance labelling');
+  }
+  const pn=obj.processing_notes||'';
+  for(const seg of pn.split('\n\n')){
+    const after=seg.includes(':')?seg.split(':').slice(1).join(':').trim():seg.trim();
+    if(after.toLowerCase()==='nan') add('processing_notes',`"nan" string leaked into segment: "${seg.substring(0,60)}" — suppress NaN cells`,'SOP §5.4 artefact suppression');
+  }
+  return E;
 }
 
-function renderCheckSummary(pass, fail) {
-  const div = document.getElementById('checksummary');
-  div.style.display = 'block';
-  const total = pass + fail;
-  const pct = total > 0 ? Math.round(pass/total*100) : 0;
-  div.innerHTML = `
-    <div class="summary-box">
-      <h3>📋 Validation Summary — SOP-DS-001 v1.3</h3>
-      <div style="margin-bottom:16px">
-        <span style="font-size:2rem;font-weight:700;color:${fail===0?'#34d399':'#f87171'}">${pct}%</span>
-        <span style="color:#64748b;margin-left:8px">pass rate (${pass}/${total} files)</span>
-      </div>
-      <div class="check-grid">
-        ${[
-          ['Schema structure (25 top-level keys)','Required keys present, no extras'],
-          ['material_name non-empty','REQUIRED field per SOP'],
-          ['canonical_name lowercase-hyphenated','No uppercase or spaces'],
-          ['material_type from allowed set','metal/polymer/ceramic/composite/elastomer/adhesive/glass/null'],
-          ['List fields use [] not null','trade_names, properties, sources, etc.'],
-          ['Scalar fields use null not ""','No empty strings for missing data'],
-          ['sources[0].source_name long form','Must be "NASA TPSX Materials Database"'],
-          ['sources[0].tier = tier1','All NASA data is tier1'],
-          ['Property canonical_name snake_case','No hyphens, all lowercase'],
-          ['property_category from allowed set','8 valid categories per §6.4'],
-          ['value is string type','Numeric values stored as strings'],
-          ['No scientific notation','6.08e-08 → 0.0000000608'],
-          ['numeric_value matches value','Consistent float parse'],
-          ['No null keys in raw dicts','Absent data = omit key entirely'],
-          ['No "nan" string in any field','pandas NaN must not leak into output'],
-          ['Last_Modified clean','No 00:00:00 or pipe-Description artefacts'],
-          ['Property source SHORT form',' "NASA TPSX" not long form'],
-          ['STP preserved as text','Not floated to 1.0'],
-          ['No false Instance labels','Count-based per §6.5'],
-          ['supplier_canonical_name valid','5-value fixed mapping per §5.3'],
-        ].map(([check, desc]) => `
-          <div class="check-item">
-            <span class="check-icon ${fail===0?'pass':'info'}">✓</span>
-            <div><div style="color:#e2e8f0">${check}</div><div style="color:#64748b;font-size:.72rem">${desc}</div></div>
-          </div>`).join('')}
-      </div>
-    </div>`;
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────────────────
+let loadedFiles=[], allResults=[], selectedIdx=null, currentFilter='all', currentTab='fields';
 
-function clearAll() {
-  loadedFiles = []; allResults = [];
-  document.getElementById('fileCount').textContent = '';
-  document.getElementById('validateBtn').disabled = true;
-  document.getElementById('progressBar').style.display = 'none';
-  document.getElementById('statsBar').style.display = 'none';
-  document.getElementById('resultsTable').style.display = 'none';
-  document.getElementById('filterBar').style.display = 'none';
-  document.getElementById('checksummary').style.display = 'none';
-  document.getElementById('emptyState').style.display = 'block';
-  document.getElementById('resultsBody').innerHTML = '';
-  document.getElementById('fileInput').value = '';
-}
-
-function loadFiles(fileList) {
-  loadedFiles = [];
-  let loaded = 0;
-  for (const file of fileList) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      loadedFiles.push({filename: file.name, content: e.target.result});
-      loaded++;
-      if (loaded === fileList.length) {
-        loadedFiles.sort((a,b) => a.filename.localeCompare(b.filename));
-        document.getElementById('fileCount').textContent = `${loadedFiles.length} file${loadedFiles.length!==1?'s':''} ready`;
-        document.getElementById('validateBtn').disabled = false;
-        document.getElementById('emptyState').style.display = 'none';
+// ─────────────────────────────────────────────────────────────────────────────
+// File loading
+// ─────────────────────────────────────────────────────────────────────────────
+function loadFiles(fileList){
+  loadedFiles=[];
+  let done=0;
+  for(const file of fileList){
+    const r=new FileReader();
+    r.onload=e=>{
+      loadedFiles.push({filename:file.name,content:e.target.result});
+      done++;
+      if(done===fileList.length){
+        loadedFiles.sort((a,b)=>a.filename.localeCompare(b.filename));
+        document.getElementById('fileCount').textContent=`${loadedFiles.length} file${loadedFiles.length!==1?'s':''} ready`;
+        document.getElementById('validateBtn').disabled=false;
+        document.getElementById('emptyRight').style.display='flex';
       }
     };
-    reader.readAsText(file);
+    r.readAsText(file);
   }
 }
 
-document.getElementById('fileInput').addEventListener('change', e => loadFiles(e.target.files));
-const dz = document.getElementById('dropZone');
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('drag-over');
-  loadFiles(e.dataTransfer.files);
-});
+// ─────────────────────────────────────────────────────────────────────────────
+// Validation
+// ─────────────────────────────────────────────────────────────────────────────
+async function runValidation(){
+  allResults=[];selectedIdx=null;
+  document.getElementById('progressBar').style.display='block';
+  document.getElementById('statsBar').style.display='grid';
+  document.getElementById('filterBar').style.display='flex';
+  document.getElementById('progressFill').style.width='0%';
+  document.getElementById('csvBtn').style.display='none';
+  document.getElementById('detailView').style.display='none';
+  document.getElementById('emptyRight').style.display='flex';
+  let pass=0,fail=0,totalErrors=0;
+  for(let i=0;i<loadedFiles.length;i++){
+    const {filename,content}=loadedFiles[i];
+    let obj={},errs=new Map();
+    try{obj=JSON.parse(content);errs=validate(obj);}
+    catch(e){errs=new Map([['__parse__',[{rule:`Invalid JSON: ${e.message}`,sop:'File must be valid parseable JSON'}]]]);}
+    const errCount=[...errs.values()].reduce((s,v)=>s+v.length,0);
+    if(errCount===0)pass++;else{fail++;totalErrors+=errCount;}
+    allResults.push({filename,obj,errors:errs,errCount});
+    document.getElementById('progressFill').style.width=`${Math.round((i+1)/loadedFiles.length*100)}%`;
+    document.getElementById('sTotal').textContent=i+1;
+    document.getElementById('sPass').textContent=pass;
+    document.getElementById('sFail').textContent=fail;
+    document.getElementById('sErr').textContent=totalErrors;
+    if(i%100===0) await new Promise(r=>setTimeout(r,0));
+  }
+  renderList();
+  document.getElementById('csvBtn').style.display='inline-flex';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// File list rendering
+// ─────────────────────────────────────────────────────────────────────────────
+function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList();}
+function renderList(){
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  const fl=document.getElementById('fileList');
+  fl.innerHTML='';
+  const shown=allResults.filter((r,i)=>{
+    if(currentFilter==='pass'&&r.errCount>0)return false;
+    if(currentFilter==='fail'&&r.errCount===0)return false;
+    if(q&&!r.filename.toLowerCase().includes(q)&&!(r.obj.material_name||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+  shown.forEach((r,i)=>{
+    const origIdx=allResults.indexOf(r);
+    const pass=r.errCount===0;
+    const div=document.createElement('div');
+    div.className='file-item'+(origIdx===selectedIdx?' selected':'');
+    div.onclick=()=>selectFile(origIdx);
+    div.innerHTML=`
+      <div class="fi-icon ${pass?'fi-pass':'fi-fail'}">${pass?'✓':'✗'}</div>
+      <div class="fi-name" title="${r.filename}">${r.filename}</div>
+      <div class="fi-errs ${pass?'no-err':'has-err'}">${pass?'✓':r.errCount+' err'}</div>
+    `;
+    fl.appendChild(div);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// File detail
+// ─────────────────────────────────────────────────────────────────────────────
+function selectFile(idx){
+  selectedIdx=idx;
+  renderList();
+  const r=allResults[idx];
+  document.getElementById('emptyRight').style.display='none';
+  const dv=document.getElementById('detailView');
+  dv.style.display='flex';
+  document.getElementById('detailFile').textContent=r.filename;
+  document.getElementById('detailMat').textContent=r.obj.material_name||'(no material_name)';
+  // Update error tab label
+  document.getElementById('tabBtnErrors').textContent=`⚠ Errors (${r.errCount})`;
+  renderCurrentTab();
+}
+function switchTab(tab,btn){
+  currentTab=tab;
+  document.querySelectorAll('.rp-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCurrentTab();
+}
+function renderCurrentTab(){
+  if(selectedIdx===null)return;
+  const r=allResults[selectedIdx];
+  if(currentTab==='fields') renderFieldsView(r);
+  else renderErrorsView(r);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers for rendering
+// ─────────────────────────────────────────────────────────────────────────────
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function errorsFor(E,path){
+  // exact match or starts with path.
+  const out=[];
+  for(const[k,v]of E) if(k===path||k.startsWith(path+'.')||k.startsWith(path+'[')) out.push(...v.map(e=>({...e,field:k})));
+  return out;
+}
+function hasErr(E,path){return errorsFor(E,path).length>0;}
+
+function icon(E,path){
+  if(!E||E.size===0) return `<span class="j-icon j-ok">✓</span>`;
+  const err=hasErr(E,path);
+  return `<span class="j-icon ${err?'j-err':'j-ok'}">${err?'✗':'✓'}</span>`;
+}
+function neutralIcon(){return `<span class="j-icon j-neu">·</span>`;}
+
+function valHtml(v){
+  if(v===null) return `<span class="j-null">null</span>`;
+  if(v===undefined) return `<span class="j-null">undefined</span>`;
+  if(typeof v==='boolean') return `<span class="j-bool">${v}</span>`;
+  if(typeof v==='number') return `<span class="j-num">${v}</span>`;
+  if(typeof v==='string'){
+    const d=v.length>90?v.substring(0,90)+'…':v;
+    return `<span class="j-str">"${esc(d)}"</span>`;
+  }
+  if(Array.isArray(v)) return `<span class="j-bracket">[</span><span class="j-arr-label">${v.length} item${v.length!==1?'s':''}</span><span class="j-bracket">]</span>`;
+  return `<span class="j-bracket">{…}</span>`;
+}
+
+function tipHtml(errs,indent){
+  if(!errs||!errs.length)return '';
+  return errs.map(e=>`<div class="err-tip" style="margin-left:${indent}px">
+    <div class="err-rule">⚠ ${esc(e.rule)}</div>
+    <div class="err-sop">📖 ${esc(e.sop)}</div>
+  </div>`).join('');
+}
+
+function row(E,path,keyStr,value,indent,comma=''){
+  const err=hasErr(E,path);
+  const myErrs=[];
+  for(const[k,v]of E) if(k===path) myErrs.push(...v);
+  const cls=err?'err-row':'ok-row';
+  const keyHtml=keyStr!==null?`<span class="j-key">"${esc(keyStr)}"</span><span class="j-colon">: </span>`:'';
+  return `
+    <div class="jrow ${cls}">
+      <span class="j-indent" style="width:${indent}px"></span>
+      ${icon(E,path)}
+      <span>${keyHtml}${valHtml(value)}${comma?`<span class="j-bracket">${comma}</span>`:''}</span>
+    </div>
+    ${tipHtml(myErrs,indent+24)}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Full field view — renders ENTIRE JSON with every field annotated
+// ─────────────────────────────────────────────────────────────────────────────
+function renderFieldsView(r){
+  const {obj,errors:E}=r;
+  const pass=r.errCount===0;
+  let h='';
+
+  // Pass banner
+  if(pass){
+    h+=`<div class="pass-banner">
+      <div class="pb-icon">✅</div>
+      <h3>All checks passed</h3>
+      <p>This file is fully compliant with SOP-DS-001 v1.3. Every field is valid.</p>
+    </div>`;
+  }
+
+  h+=`<div class="json-tree">`;
+  h+=`<div class="sec-header">TOP-LEVEL FIELDS</div>`;
+  h+=`<div class="jrow ok-row">${neutralIcon()}<span class="j-bracket">{</span></div>`;
+
+  // Render each top-level field
+  const allKeys=[...new Set([...REQUIRED_TOP,...Object.keys(obj)])];
+
+  for(let ki=0;ki<allKeys.length;ki++){
+    const k=allKeys[ki];
+    const v=obj[k];
+    const isLast=ki===allKeys.length-1;
+    const comma=isLast?'':',';
+
+    if(k==='supplier_context'){
+      const err=hasErr(E,'supplier_context');
+      h+=`<div class="jrow ${err?'err-row':'ok-row'}">
+        <span class="j-indent" style="width:16px"></span>
+        ${icon(E,'supplier_context')}
+        <span class="j-key">"supplier_context"</span><span class="j-colon">: </span><span class="j-bracket">{</span>
+      </div>`;
+      h+=`<div class="sec-header" style="margin-left:32px">supplier_context fields</div>`;
+      const sc=v||{};
+      for(const[si,sk]of REQUIRED_SUPPLIER.entries()){
+        h+=row(E,'supplier_context.'+sk,sk,sc[sk]!==undefined?sc[sk]:null,32,si<REQUIRED_SUPPLIER.length-1?',':'');
+      }
+      h+=`<div class="jrow ok-row"><span class="j-indent" style="width:16px"></span>${neutralIcon()}<span class="j-bracket">}${comma}</span></div>`;
+    }
+    else if(k==='properties'){
+      const err=hasErr(E,'properties');
+      h+=`<div class="jrow ${err?'err-row':'ok-row'}">
+        <span class="j-indent" style="width:16px"></span>
+        ${icon(E,'properties')}
+        <span class="j-key">"properties"</span><span class="j-colon">: </span><span class="j-bracket">[</span>
+      </div>`;
+      const props=Array.isArray(v)?v:[];
+      if(props.length===0){
+        h+=`<div class="jrow ok-row"><span class="j-indent" style="width:32px"></span>${neutralIcon()}<span style="color:#4b5563;font-size:.72rem">// empty array</span></div>`;
+      }
+      for(let pi=0;pi<props.length;pi++){
+        const p=props[pi];
+        const px=`properties[${pi}]`;
+        const perr=hasErr(E,px);
+        h+=`<div class="sec-header" style="margin-left:32px">Property [${pi}]: ${esc((p.name||'').substring(0,50))}</div>`;
+        h+=`<div class="jrow ${perr?'err-row':'ok-row'}">
+          <span class="j-indent" style="width:32px"></span>
+          ${icon(E,px)}
+          <span class="j-bracket">{</span>
+        </div>`;
+        for(const[ri,pk]of REQUIRED_PROP.entries()){
+          const fpath=`${px}.${pk}`;
+          if(pk==='raw'){
+            const rerr=hasErr(E,fpath);
+            h+=`<div class="jrow ${rerr?'err-row':'ok-row'}">
+              <span class="j-indent" style="width:48px"></span>
+              ${icon(E,fpath)}
+              <span class="j-key">"raw"</span><span class="j-colon">: </span><span class="j-bracket">{</span>
+            </div>`;
+            const raw=p.raw||{};
+            const rawKeys=['Value','Units','Uncertainty','Source','STP','Reference','Last_Modified','instance','stp_review_note'];
+            const allRawKeys=[...new Set([...rawKeys,...Object.keys(raw)])];
+            for(const rk of allRawKeys){
+              if(rk in raw) h+=row(E,`${px}.raw.${rk}`,rk,raw[rk],64);
+            }
+            h+=`<div class="jrow ok-row"><span class="j-indent" style="width:48px"></span>${neutralIcon()}<span class="j-bracket">}</span></div>`;
+          } else if(pk==='source'){
+            const serr=hasErr(E,fpath);
+            h+=`<div class="jrow ${serr?'err-row':'ok-row'}">
+              <span class="j-indent" style="width:48px"></span>
+              ${icon(E,fpath)}
+              <span class="j-key">"source"</span><span class="j-colon">: </span><span class="j-bracket">{</span>
+            </div>`;
+            const src=p.source||{};
+            for(const srck of REQUIRED_SRC){
+              h+=row(E,`${px}.source.${srck}`,srck,src[srck]!==undefined?src[srck]:null,64);
+            }
+            h+=`<div class="jrow ok-row"><span class="j-indent" style="width:48px"></span>${neutralIcon()}<span class="j-bracket">}</span></div>`;
+          } else {
+            h+=row(E,fpath,pk,pk in (p||{})?p[pk]:null,48,ri<REQUIRED_PROP.length-1?',':'');
+          }
+        }
+        h+=`<div class="jrow ok-row"><span class="j-indent" style="width:32px"></span>${neutralIcon()}<span class="j-bracket">}${pi<props.length-1?',':''}</span></div>`;
+      }
+      h+=`<div class="jrow ok-row"><span class="j-indent" style="width:16px"></span>${neutralIcon()}<span class="j-bracket">]${comma}</span></div>`;
+    }
+    else if(k==='sources'){
+      const err=hasErr(E,'sources');
+      h+=`<div class="jrow ${err?'err-row':'ok-row'}">
+        <span class="j-indent" style="width:16px"></span>
+        ${icon(E,'sources')}
+        <span class="j-key">"sources"</span><span class="j-colon">: </span><span class="j-bracket">[</span>
+      </div>`;
+      const srcs=Array.isArray(v)?v:[];
+      if(srcs.length>0){
+        const s0=srcs[0];
+        h+=`<div class="jrow ok-row"><span class="j-indent" style="width:32px"></span>${neutralIcon()}<span class="j-bracket">{</span></div>`;
+        for(const srck of REQUIRED_SRC){
+          h+=row(E,'sources[0].'+srck,srck,s0[srck]!==undefined?s0[srck]:null,48);
+        }
+        if(s0.raw){
+          const rerr=hasErr(E,'sources[0].raw');
+          h+=`<div class="jrow ${rerr?'err-row':'ok-row'}">
+            <span class="j-indent" style="width:48px"></span>
+            ${icon(E,'sources[0].raw')}
+            <span class="j-key">"raw"</span><span class="j-colon">: </span><span class="j-bracket">{</span>
+          </div>`;
+          for(const rk of ['General_References','Point_of_Contact','Last_Modified','Property_References']){
+            if(rk in s0.raw) h+=row(E,'sources[0].raw.'+rk,rk,s0.raw[rk],64);
+          }
+          h+=`<div class="jrow ok-row"><span class="j-indent" style="width:48px"></span>${neutralIcon()}<span class="j-bracket">}</span></div>`;
+        }
+        h+=`<div class="jrow ok-row"><span class="j-indent" style="width:32px"></span>${neutralIcon()}<span class="j-bracket">}</span></div>`;
+        if(srcs.length>1) h+=`<div class="jrow ok-row"><span class="j-indent" style="width:32px"></span>${neutralIcon()}<span style="color:#4b5563;font-size:.72rem">// + ${srcs.length-1} more source${srcs.length>2?'s':''}</span></div>`;
+      }
+      h+=`<div class="jrow ok-row"><span class="j-indent" style="width:16px"></span>${neutralIcon()}<span class="j-bracket">]${comma}</span></div>`;
+    }
+    else {
+      h+=row(E,k,k,v!==undefined?v:null,16,comma);
+    }
+  }
+
+  h+=`<div class="jrow ok-row">${neutralIcon()}<span class="j-bracket">}</span></div>`;
+  h+=`</div>`;
+  document.getElementById('rpBody').innerHTML=h;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Errors-only view
+// ─────────────────────────────────────────────────────────────────────────────
+function renderErrorsView(r){
+  if(r.errCount===0){
+    document.getElementById('rpBody').innerHTML=`<div class="pass-banner">
+      <div class="pb-icon">✅</div>
+      <h3>No errors found</h3>
+      <p>This file passes all 20 SOP-DS-001 v1.3 validation checks.</p>
+    </div>`;
+    return;
+  }
+  let rows='';
+  let n=0;
+  for(const[field,errs]of r.errors){
+    for(const e of errs){
+      n++;
+      rows+=`<tr>
+        <td style="color:#64748b;text-align:center;width:36px">${n}</td>
+        <td><span class="field-pill">${esc(field)}</span></td>
+        <td style="color:#fca5a5">${esc(e.rule)}</td>
+        <td style="color:#6b7280;font-size:.72rem">${esc(e.sop)}</td>
+      </tr>`;
+    }
+  }
+  document.getElementById('rpBody').innerHTML=`
+    <table class="err-table">
+      <thead><tr>
+        <th>#</th>
+        <th>Field Path</th>
+        <th>Error / Rule Violated</th>
+        <th>SOP Reference</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSV download
+// ─────────────────────────────────────────────────────────────────────────────
+function downloadCSV(){
+  const rows=[['#','filename','material_name','material_type','status','error_count','properties_count','field','error','sop_reference']];
+  let n=0;
+  for(const r of allResults){
+    n++;
+    if(r.errCount===0){
+      rows.push([n,r.filename,(r.obj.material_name||'').replace(/"/g,'""'),r.obj.material_type||'','PASS',0,(r.obj.properties||[]).length,'','','']);
+    } else {
+      let first=true;
+      for(const[field,errs]of r.errors){
+        for(const e of errs){
+          rows.push([
+            first?n:'',
+            first?r.filename:'',
+            first?(r.obj.material_name||'').replace(/"/g,'""'):'',
+            first?r.obj.material_type||'':'',
+            'FAIL',
+            first?r.errCount:'',
+            first?(r.obj.properties||[]).length:'',
+            field.replace(/"/g,'""'),
+            e.rule.replace(/"/g,'""'),
+            e.sop.replace(/"/g,'""')
+          ]);
+          first=false;
+        }
+      }
+    }
+  }
+  const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='xtrium_validation_report.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Clear / utilities
+// ─────────────────────────────────────────────────────────────────────────────
+function clearAll(){
+  loadedFiles=[];allResults=[];selectedIdx=null;
+  document.getElementById('fileCount').textContent='';
+  document.getElementById('validateBtn').disabled=true;
+  document.getElementById('csvBtn').style.display='none';
+  ['progressBar','statsBar','filterBar'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('fileList').innerHTML='';
+  document.getElementById('detailView').style.display='none';
+  document.getElementById('emptyRight').style.display='flex';
+  document.getElementById('fileInput').value='';
+}
+
+document.getElementById('fileInput').addEventListener('change',e=>loadFiles(e.target.files));
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');loadFiles(e.dataTransfer.files);});
 </script>
 </body>
 </html>
